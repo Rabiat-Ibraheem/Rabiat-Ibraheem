@@ -16,8 +16,13 @@ public class StoryProjectMain {
 		app = Javalin.create();
 		app.start(8081);		// start up the javalin server for http requests
 		
-	/*app.get(path: "/users", ctx ->	{		
-		ctx.json(user)*/
+	app.get("/hello",ctx -> ctx.result("Hello World"));		
+	}
+	
+    app.post("/get" ) { ctx -> ctx.
+		
+		
+		
 	}
 
-}
+

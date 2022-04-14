@@ -5,7 +5,6 @@ public class DAOFactory {
 	private static EditorDAO editorDAO = null;
 	private static GenreDAO genreDAO = null;
 	private static PitchTableDAO pitchTableDAO = null;
-	private static StatusInfoDAO statusInfoDAO = null;
 	private static UserInfoDAO userInfoDAO = null;
 	
 	private DAOFactory()	{
@@ -34,14 +33,6 @@ public class DAOFactory {
 
 	public static void setPitchTableDAO(PitchTableDAO pitchTableDAO) {
 		DAOFactory.pitchTableDAO = pitchTableDAO;
-	}
-
-	public static StatusInfoDAO getStatusInfoDAO() {
-		return statusInfoDAO;
-	}
-
-	public static void setStatusInfoDAO(StatusInfoDAO statusInfoDAO) {
-		DAOFactory.statusInfoDAO = statusInfoDAO;
 	}
 
 	public static UserInfoDAO getUserInfoDAO() {

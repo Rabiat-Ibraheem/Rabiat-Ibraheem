@@ -4,6 +4,8 @@ package dev.ibraheem.SPMSdata;
 import java.sql.SQLException;
 import java.util.List;
 
+import dev.ibraheem.project1.Pitch_table;
+
 	/*- generics are a way of getting more reusability out of your code.
 	 * here, i am creating the behaviors for a DAO (data access object) -
 	 * an object whose job is to interact with a database. however, i might
@@ -28,6 +30,8 @@ public interface GenericDAO <T> {
 		// CRUD methods: create, read, update, delete
 	public int create(T newObj); // returns the generated ID
 	public T getById(int id); // read one
+	public T getByAuthorId(Pitch_table author_id);
+	
 	public List<T> getAll(); // read all
 	public void update(T updatedObj) throws SQLException;
 	public void delete(T objToDelete) throws SQLException;

@@ -30,8 +30,10 @@ public class ConnectionFactory {
 		try {
 			//If there are issues connecting, the driver needs to be registered
 			//Class.forName("org.postgresql.driver");
+			//Line below gets teh connection
 			connection = DriverManager.getConnection(url, username, password );
 		} catch (SQLException e)	{
+			//if something goes wrong, this brings up the stack trace
 			e.printStackTrace();
 		}
 			
