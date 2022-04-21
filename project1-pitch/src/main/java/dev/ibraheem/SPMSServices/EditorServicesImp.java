@@ -2,30 +2,35 @@ package dev.ibraheem.SPMSServices;
 
 import java.util.List;
 
-import dev.ibraheem.SPMSdata.DAOFactory;
-import dev.ibraheem.SPMSdata.PitchTableDAO;
-import dev.ibraheem.SPMSdata.UserInfoDAO;
-import dev.ibraheem.project1.Pitch_table;
-import dev.ibraheem.project1.UserInfo;
+import dev.ibraheem.SPMSdata.PitchTablePostgres;
+import dev.ibraheem.project1.PitchTable;
 
 public class EditorServicesImp implements EditorServices{
-	private UserInfoDAO userInfoDao = DAOFactory.getUserInfoDAO();
-	private PitchTableDAO pitchDao = DAOFactory.getPitchTableDAO();
-	
-	
+
 	@Override
-	public List<Pitch_table> searchPitchbyEditorId(int editor_id) {
-		return pitchDao.getByEditor(editor_id);
+	public Object ShowPitchTable() {
+		Object ptlist = PitchTablePostgres.select_all;
+		return ptlist;
+		
 	}
+
 	@Override
-	public List<Pitch_table> searchPitch_status(String status_name) {
-		return pitchDao.getByStatus_name("Pending Editor Approval");
+	public PitchTable ShowPitchTable(PitchTable Edr) {
+		// TODO Auto-generated method stub
+		return null;
 	}
+
 	@Override
-	public List<Pitch_table> searchBy_author(int author_id) {
-		return pitchDao.getByAuthor(author_id);
+	public List<PitchTable> showAllPitches() {
+		// TODO Auto-generated method stub
+		return null;
 	}
-	
+
+	@Override
+	public List<PitchTable> showPitches() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+ 
 }
 
-	

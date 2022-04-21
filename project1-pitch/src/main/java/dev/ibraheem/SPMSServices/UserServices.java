@@ -2,70 +2,38 @@ package dev.ibraheem.SPMSServices;
 //User login services
 //might be renamed to editor services down the line
 
+import java.sql.SQLException;
 import java.util.List;
 
 import dev.ibraheem.SPMSExceptions.IncorrectCredentialsException;
 import dev.ibraheem.SPMSExceptions.StorypitchAlreadyExistsException;
-import dev.ibraheem.SPMSExceptions.usernameAlreadyExistsException;
-import dev.ibraheem.project1.Pitch_table;
+import dev.ibraheem.SPMSExceptions.UserNotFound;
+import dev.ibraheem.SPMSExceptions.UsernameAlreadyExistsException;
+import dev.ibraheem.project1.PitchTable;
 import dev.ibraheem.project1.UserInfo;
 
 public interface UserServices {
 	
-	// returns the User if username and password are correct. 
-	 // otherwise throws an IncorrectCredentialsException.
-	/* * 
-	 * @param username
-	 * @param password
-	 * @return User matching the given username/password
-	 */
-	public UserInfo logIn(String username, int password) throws IncorrectCredentialsException;
-
+	public UserInfo logIn(String username, String password) throws IncorrectCredentialsException;
+	public PitchTable createNewPitch(String tentative_title) throws StorypitchAlreadyExistsException;
+	public UserInfo register(UserInfo newUser) throws UsernameAlreadyExistsException;
+	public PitchTable checkByStatus(int author_id);
+	public List<PitchTable> viewByStatus();
+	//PitchTable newPitch(PitchTable newPitchTable) throws StorypitchAlreadyExistsException; 
+	String ShowAllByUser(int user_id);
+	public PitchTable findPitchTable(PitchTable p);
 	
-	/**
-	 * creates a new user. if the username is available, 
-	 * returns the new user with their database-generated ID. 
-	 * otherwise, throws a UsernameAlreadyExistsException.
-	 * 
-	 * @param newUser
-	 * @return User with newly generated ID
-	 * @throws usernameAlreadyExistsException 
-	 */
-	
-	public UserInfo register(UserInfo newUser) throws usernameAlreadyExistsException;
+	//modify and pending pitches 
 	
 	
 	
-	/**
-	 * 
-	 * @return all available pets
-	 * 
-	 * 
-	 */
-	
-	public Pitch_table newPitch(String tentative_title) throws StorypitchAlreadyExistsException;
-	
-	
-	
-	
-	public List<Pitch_table> viewExistingPitches();
-
-
-	List<Pitch_table> viewExistingPitches(int user_id);
-
-
-	Pitch_table newPitch(Pitch_table newPitch_table) throws StorypitchAlreadyExistsException;
-
-
-	List<UserInfo> getByUserId(int user_id);
-	
-	
-	
-	
-	/**
-	 * 
-	 * @param species
-	 * @return all available pets with the specified species
-	 */
-	
+	/*public List<UserInfo> showAllUsers();
+	public abstract void delete(UserInfo objToDelete) throws SQLException;
+	public abstract void update(UserInfo updatedObj) throws SQLException;
+	public  UserInfo findByUsername (UserInfo un) throws UserNotFound;
+	public  UserInfo findByUserId (UserInfo uid) throws UserNotFound;
+	public UserInfo login(String username, int password) throws UserNotFound;
+	UserInfo register(UserInfo newUserInfo) throws UsernameAlreadyExistsException;
+	*/
 }
+	

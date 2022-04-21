@@ -5,134 +5,146 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
+import dev.ibraheem.SPMSExceptions.UserNotFound;
 import dev.ibraheem.SPMSServices.ConnectionFactory;
-import dev.ibraheem.project1.Pitch_table;
 import dev.ibraheem.project1.UserInfo;
+import dev.ibraheem.project1.PitchTable;
 
 
 public class UserPostgres implements UserInfoDAO {
-	private static Connection conn = ConnectionFactory.getConnection();
+	
+	private PreparedStatement pst = null;
+	private ResultSet rs = null;
+	public static final String insert_command ="Insert into user_info values(?,?,?,?,?,?,?)";
+	public static final String update_command ="update user_info set first_name=?, last_name=?, role_id=?, role_name=?, username=?, passwrd=? where user_id =?";
+	public static final String find_uid_command ="select * from user_info where user_id=?";
+	public static final String find_un_command ="select * from user_info where username=?";
+	public static final String select_all ="select * from user_info";
 
-	@Override
-	public int create(UserInfo newObj) {
-		// TODO Auto-generated method stub
-		int generatedId = 0;
+	Connection conn = ConnectionFactory.getConnection();
+	
+// To display all users
+@Override
+public List<UserInfo> showAllUsers() {
+		UserInfo usrInfo = null;
+		List<UserInfo> usrlist = new ArrayList<>();
+		
+		try {
+			pst = conn.prepareStatement(select_all);
+			rs = pst.executeQuery();
+			while (rs.next()) {
+				usrInfo = new UserInfo();
+				usrInfo.setUser_id(rs.getInt("user_id"));
+				usrInfo.setFirst_name(rs.getString("first_name"));
+				usrInfo.setLast_name(rs.getString("last_name"));
+				usrInfo.setRole_id(rs.getInt("role_id"));
+				usrInfo.setRole_name(rs.getString("role_name"));
+				usrInfo.setUsername(rs.getString("username"));
+				usrInfo.setPassword(rs.getString("passwrd"));
+				usrlist.add(usrInfo);
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return usrInfo;
+	}
+
+@Override
+public int create(UserInfo newObj) {
+	int generatedId = 0;
+	Connection conn = ConnectionFactory.getConnection();
+	try {
+		String sql = "insert into userinfo (first_name, last_name, role_id, username, passwd)"
+				+ " values (?,?,?,?)";
+		PreparedStatement pStmt = conn.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS);
+		pStmt.setString(1, newObj.getFirst_name());
+		pStmt.setString(2, newObj.getLast_name());
+		pStmt.setString(4, newObj.getUsername(sql));
+		pStmt.setString(5, newObj.getPassword());
+		pStmt.setInt(3, 300);
+		
+		conn.setAutoCommit(false); // for ACID (transaction management)
+		pStmt.executeUpdate();
+		ResultSet resultSet = pStmt.getGeneratedKeys();
+		
+		if (resultSet.next()) {
+			generatedId = resultSet.getInt(1);
+			conn.commit();
+		} else {
+			conn.rollback();
+		}
+	} catch (SQLException e) {
+		e.printStackTrace();
+		try {
+			conn.rollback();
+		} catch (SQLException e1) {
+			e1.printStackTrace();
+		}
+	} finally {
+		try {
+			conn.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+
+	return generatedId;
+}
+
+//To update current user_info table; to add a new user
+@Override
+public void update(UserInfo updatedObj) throws SQLException {
+	Connection conn = ConnectionFactory.getConnection(); 
+	try {
+		String sql = "update user_info set first_name, last_name, role_id, username, passwrd)"
+				+ "where user_id=?";
+		PreparedStatement pStmt = conn.prepareStatement(sql);
+		pStmt.setString(1, updatedObj.getFirst_name());
+		pStmt.setString(2, updatedObj.getLast_name());
+		pStmt.setString(4, updatedObj.getUsername(sql));
+		pStmt.setString(5, updatedObj.getPassword());
+		pStmt.setInt(3, 300);
+		pStmt.setInt(6, updatedObj.getUser_id());
+		
+		conn.setAutoCommit(false); // for ACID (transaction management)
+		int rowsUpdated = pStmt.executeUpdate();
+		
+		if (rowsUpdated==1) {
+			conn.commit();
+		} else {
+			conn.rollback();
+			throw new SQLException("ERROR: no object found to update");
+		}
+	} catch (SQLException e) {
+		e.printStackTrace();
+		try {
+			conn.rollback();
+		} catch (SQLException e1) {
+			e1.printStackTrace();
+		}
+		throw e;
+	} finally {
+		try {
+			conn.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+}
+
+// To delete users
+@Override
+public void delete(UserInfo objToDelete) throws SQLException {
+	// TODO Auto-generated method stub
 		Connection conn = ConnectionFactory.getConnection();
 		try {
-			String sql = "insert into user_info (user_id, first_name, last_name, role_id, role_name, username, passwrd)"
-					+ " values (?,?,?,?,?,?,?)";
-			PreparedStatement pStmt = conn.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS);
-			pStmt.setInt(1, newObj.getUser_id());
-			pStmt.setString(2, newObj.getFirst_name());
-			pStmt.setString(3, newObj.getLast_name());
-			pStmt.setInt(7, newObj.getPassword());
-			pStmt.setInt(7, 1);
-			
-			conn.setAutoCommit(false); // for ACID (transaction management)
-			pStmt.executeUpdate();
-			ResultSet resultSet = pStmt.getGeneratedKeys();
-			
-			if (resultSet.next()) {
-				generatedId = resultSet.getInt(1);
-				conn.commit();
-			} else {
-				conn.rollback();
-			}
-		} catch (SQLException e) {
-			e.printStackTrace();
-			try {
-				conn.rollback();
-			} catch (SQLException e1) {
-				e1.printStackTrace();
-			}
-		} finally {
-			try {
-				conn.close();
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
-		}
-
-		return generatedId;
-		
-		
-	}
-// might be get by user_id not just id
-	@Override
-	public UserInfo getById(int id) {
-		// TODO Auto-generated method stub
-		
-		UserInfo userInfo = null;
-		try (Connection conn = ConnectionFactory.getConnection()) {
-			String sql = "select * from user_info left join editor on user_info.user_Id=editor.editor_id"
-					+ " where userInfo.id = ?";
+			String sql = "delete from user_info where user_id=?";
 			PreparedStatement pStmt = conn.prepareStatement(sql);
-			pStmt.setInt(1, id);
-			
-			ResultSet resultSet = pStmt.executeQuery();
-			if (resultSet.next()) {
-				userInfo = new UserInfo();
-				userInfo.setRole_id(id);
-				userInfo.setFirst_name(resultSet.getString("first_name"));
-				userInfo.setLast_name(resultSet.getString("last_name"));
-				userInfo.setUsername(resultSet.getString("username"));
-				userInfo.setPassword(resultSet.getInt("passwrd"));
-				
-				PitchTableDAO pitchTable = DAOFactory.getPitchTableDAO();
-				userInfo.setPitch(pitchTable.getByEditorInfo(userInfo));
-			}
-			
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		return userInfo;
-	}
-
-	@Override
-	public List<UserInfo> getAll() {
-		List<UserInfo> users = new LinkedList<>();
-		try (Connection conn = ConnectionFactory.getConnection()) {
-			
-			String sql = "select * from user_info left join story_pitch on user_info.user_id=story_pitch.user_id;";
-			Statement stmt = conn.createStatement();
-			
-			ResultSet resultSet = stmt.executeQuery(sql);
-			while (resultSet.next()) {
-				UserInfo userInfo = new UserInfo();
-				userInfo.setUser_id(resultSet.getInt("user_id"));
-				userInfo.setFirst_name(resultSet.getString("first_name"));
-				userInfo.setLast_name(resultSet.getString("last_name"));
-				userInfo.setUsername(resultSet.getString("username"));
-				userInfo.setPassword(resultSet.getInt("passwrd"));
-				
-				PitchTableDAO pitchTable = DAOFactory.getPitchTableDAO();
-				userInfo.setPitch(pitchTable.getByEditorInfo(userInfo));
-				
-				users.add(userInfo);
-			}
-			
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		return users;
-	}
-
-	
-	@Override
-	public void update(UserInfo updatedObj) throws SQLException {
-		Connection conn = ConnectionFactory.getConnection(); 
-		try {
-			String sql = "update user_info set first_name, last_name, role_id, username, passwrd)"
-					+ "where user_id=?";
-			PreparedStatement pStmt = conn.prepareStatement(sql);
-			pStmt.setString(1, updatedObj.getFirst_name() + " " + updatedObj.getLast_name());
-			pStmt.setString(2, updatedObj.getUsername());
-			pStmt.setInt(3, updatedObj.getPassword());
-			pStmt.setInt(4, 1);
-			pStmt.setInt(5, updatedObj.getUser_id());
+			pStmt.setInt(1, objToDelete.getUser_id());
 			
 			conn.setAutoCommit(false); // for ACID (transaction management)
 			int rowsUpdated = pStmt.executeUpdate();
@@ -141,7 +153,7 @@ public class UserPostgres implements UserInfoDAO {
 				conn.commit();
 			} else {
 				conn.rollback();
-				throw new SQLException("ERROR: no object found to update");
+				throw new SQLException("ERROR: no object found to delete");
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -160,176 +172,79 @@ public class UserPostgres implements UserInfoDAO {
 		}
 	}
 
-	@Override
-	public void delete(UserInfo objToDelete) throws SQLException {
-		// TODO Auto-generated method stub
-			Connection conn = ConnectionFactory.getConnection();
-			try {
-				String sql = "delete from user_info where user_id=?";
-				PreparedStatement pStmt = conn.prepareStatement(sql);
-				pStmt.setInt(1, objToDelete.getUser_id());
-				
-				conn.setAutoCommit(false); // for ACID (transaction management)
-				int rowsUpdated = pStmt.executeUpdate();
-				
-				if (rowsUpdated==1) {
-					conn.commit();
-				} else {
-					conn.rollback();
-					throw new SQLException("ERROR: no object found to delete");
-				}
-			} catch (SQLException e) {
-				e.printStackTrace();
-				try {
-					conn.rollback();
-				} catch (SQLException e1) {
-					e1.printStackTrace();
-				}
-				throw e;
-			} finally {
-				try {
-					conn.close();
-				} catch (SQLException e) {
-					e.printStackTrace();
-				}
-			}
-		}
 
-	@Override
-	public UserInfo getByUsername(String username) {
-		// TODO Auto-generated method stub
-		UserInfo userDetails = null;
-		try (Connection conn = ConnectionFactory.getConnection()) {
-			String sql = "select * from user_info left join editor on user_info.user_Id=editor.editor_id"
-					+ " where user_info.username = ?";
-			PreparedStatement pStmt = conn.prepareStatement(sql);
-			pStmt.setString(1, username);
-			
-			ResultSet resultSet = pStmt.executeQuery();
-			if (resultSet.next()) {
-				userDetails = new UserInfo();
-				userDetails.setUser_id(resultSet.getInt("user_id"));
-				userDetails.setFirst_name(resultSet.getString("first_name"));
-				userDetails.setLast_name(resultSet.getString("last_name"));
-				userDetails.setPassword(resultSet.getInt("passwrd"));
-				
-				PitchTableDAO pitchTable = DAOFactory.getPitchTableDAO();
-				userDetails.setPitch(pitchTable.getByEditorInfo(userDetails));
-			}
-			
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		return userDetails;
-	}
-
-	@Override
-	public List<UserInfo> getByLastName(String last_name) {
-		// TODO Auto-generated method stub
-				UserInfo getLN = null;
-				try (Connection conn = ConnectionFactory.getConnection()) {
-					String sql = "select * from user_info left join editor on user_info.user_Id=editor.editor_id"
-							+ " where user_info.last_name = ?";
-					PreparedStatement pStmt = conn.prepareStatement(sql);
-					pStmt.setString(1, last_name);
-					
-					ResultSet resultSet = pStmt.executeQuery();
-					if (resultSet.next()) {
-						getLN = new UserInfo();
-						getLN.setUser_id(resultSet.getInt("user_id"));
-						getLN.setFirst_name(resultSet.getString("first_name"));
-						getLN.setLast_name(resultSet.getString("last_name"));
-						getLN.setPassword(resultSet.getInt("passwrd"));
-						
-						PitchTableDAO pitchTable = DAOFactory.getPitchTableDAO();
-						getLN.setPitch(pitchTable.getByEditorInfo(getLN));
-					}
-					
-				} catch (SQLException e) {
-					e.printStackTrace();
-				}
-				return getLN;
-			}
-
-
-
-
-	@Override
-	public void updatePitch_table(int pitch_id, String tentative_title, String blurb, String description, int user_id,
-			int editor_id, int genre_id, int word_count_length, int author_id, int expected_completion_date, String status_name, 
-			String genre_name) throws SQLException {
-			Connection conn = ConnectionFactory.getConnection();
-			try {
-				String sql = "insert into story_pitch (pitch_id, tentative_title, blurb, description, user_id, word_count_length, author_id, expected_completion_date, genre_name) values (?,?,?,?,?,?,?,?,?)";
-				PreparedStatement pStmt = conn.prepareStatement(sql);
-				pStmt.setInt(1, pitch_id);
-				pStmt.setString(2, tentative_title);
-				pStmt.setString(3, blurb);
-				pStmt.setString(4, description);
-				pStmt.setInt(5, user_id);
-				pStmt.setInt(6, editor_id);
-				pStmt.setInt(7, genre_id);
-				pStmt.setInt(8, word_count_length);
-				pStmt.setInt(9, author_id);
-				pStmt.setInt(10, expected_completion_date);
-				pStmt.setString(11, status_name);
-				pStmt.setString(12, genre_name);
-				
-				conn.setAutoCommit(false); // for ACID (transaction management)
-				int rowsUpdated = pStmt.executeUpdate();
-				
-				if (rowsUpdated==1) {
-					conn.commit();
-				} else {
-					conn.rollback();
-				}
-			} catch (SQLException e) {
-				e.printStackTrace();
-				try {
-					conn.rollback();
-				} catch (SQLException e1) {
-					e1.printStackTrace();
-				}
-				throw e;
-			} finally {
-				try {
-					conn.close();
-				} catch (SQLException e) {
-					e.printStackTrace();
-				}
-			}
-		}
-
-
-
-	@Override
-	public List<UserInfo> getbyUserId(int user_id) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	
-	public List<UserInfo> getByFirstName(String first_name) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public void updatePitch_Table(int pitch_id, int user_id) throws SQLException {
-		// TODO Auto-generated method stub
+@Override
+public  UserInfo findByUserId(int user_id) throws UserNotFound {
+		UserInfo findTmp = null;
+		try {
+			pst = conn.prepareStatement(find_uid_command);
 		
-	}
-	@Override
-	public List<Pitch_table> getbyAuthorId(int user_id) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-	@Override
-	public UserInfo getByAuthorId(Pitch_table author_id) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-	
+		pst.setInt(1, user_id);
+		rs = pst.executeQuery();
+		if (!rs.next()){
+			throw new UserNotFound();
+		}
+		
+		findTmp = new UserInfo();
+		findTmp.setFirst_name(rs.getString("first_name"));
+		findTmp.setLast_name(rs.getString("last_name"));
+		findTmp.setRole_id(rs.getInt("role_id"));
+		findTmp.setRole_name(rs.getString("role_name"));
+		findTmp.setUsername(rs.getString("username"));
+		findTmp.setPassword(rs.getString("passwrd"));
+		
+		} catch (SQLException e2) {
+			// TODO Auto-generated catch block
+			e2.printStackTrace();
+		}finally {
+				try {
+					pst.close();
+				} catch (SQLException e2) {
+					// TODO Auto-generated catch block
+					e2.printStackTrace();
+				}
+		}
+		return findTmp;
+}
 
+
+@Override
+public UserInfo findByUsername(String username) {
+	UserInfo findUn = null;
 	
+	try {
+		pst = conn.prepareStatement(find_un_command);
+	
+	pst.setString(1, username);
+	rs = pst.executeQuery();
+	if (!rs.next()){
+		throw new UserNotFound();
+	}
+	
+	findUn = new UserInfo();
+	findUn.setFirst_name(rs.getString("first_name"));
+	findUn.setLast_name(rs.getString("last_name"));
+	findUn.setRole_id(rs.getInt("role_id"));
+	findUn.setRole_name(rs.getString("role_name"));
+	findUn.setUsername(rs.getString("username"));
+	findUn.setPassword(rs.getString("passwrd"));
+	
+	} catch (SQLException e2) {
+		// TODO Auto-generated catch block
+		e2.printStackTrace();
+	} catch (UserNotFound e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}finally {
+			try {
+				pst.close();
+			} catch (SQLException e2) {
+				// TODO Auto-generated catch block
+				e2.printStackTrace();
+			}
+	}
+	return findUn;
+
+	}
+
 }

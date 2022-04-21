@@ -1,55 +1,29 @@
  package dev.ibraheem.project1;
 
-import java.util.Objects;
 
 public class Genre {
-	// fields
-	private int genre_id;
-	private String genre_name;
-
-	// constructor
+	private int genreID;
+	private String genreName;
 	public Genre() {
-		genre_id = genre_id;
-		genre_name = genre_name;
+		super();
+		// TODO Auto-generated constructor stub
 	}
-
-	// getters and setters
-	public int getGenre_id() {
-		return genre_id;
+	public Genre(int genreID, String genreName) {
+		super();
+		this.genreID = genreID;
+		this.genreName = genreName;
 	}
-
-	public void setGenre_id(int genre_id) {
-		this.genre_id = genre_id;
+	public int getGenreID() {
+		return genreID;
 	}
-
-	public String getGenre_name() {
-		return genre_name;
+	public void setGenreID(int genreID) {
+		this.genreID = genreID;
 	}
-
-	public void setGenre_name(String genre_name) {
-		this.genre_name = genre_name;
+	public String getGenreName() {
+		return genreName;
 	}
-
-	@Override
-	public String toString() {
-		return "Genre [genre_id=" + genre_id + ", genre_name=" + genre_name + "]";
+	public void setGenreName(String genreName) {
+		this.genreName = genreName;
 	}
-
-	@Override
-	public int hashCode() {
-		return Objects.hash(genre_id, genre_name);
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		Genre other = (Genre) obj;
-		return genre_id == other.genre_id && Objects.equals(genre_name, other.genre_name);
-	}
-
-}
+	
+}	
